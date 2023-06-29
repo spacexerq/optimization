@@ -15,13 +15,13 @@ def solve(data: TransportVS):
         diff = data.get_supply_demand_difference()
         report_list.append(f'Supply to demand difference: {diff}')
         report_list.append(f'Balance condition: {True if diff == 0 else False}')
-        assert not diff, "No balance in the problem"
-        # if diff < 0:
-        #     data.add_supplier(-diff)
-        #     report_list.extend([f'Added fictitious supplier: {-diff}', '\n'])
-        # elif diff > 0:
-        #     data.add_customer(diff)
-        #     report_list.extend([f'Added fictitious consumer: {diff}', '\n'])
+        # assert not diff, "No balance in the problem"
+        if diff < 0:
+            data.add_supplier(-diff)
+            report_list.extend([f'Added fictitious supplier: {-diff}', '\n'])
+        elif diff > 0:
+            data.add_customer(diff)
+            report_list.extend([f'Added fictitious consumer: {diff}', '\n'])
 
         x = get_start_plan(data)
         report_list.extend(['Starting plan. Method used - north-west corner:',

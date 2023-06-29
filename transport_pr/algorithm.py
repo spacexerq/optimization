@@ -12,20 +12,15 @@ def get_start_plan(data: TransportVS):
     b = data.b.copy()
     i = 0
     j = 0
-
     while i < data.m and j < data.n:
         x = min(a[i], b[j])
         a[i] -= x
         b[j] -= x
-
         res[i][j] = x
-
         if a[i] == 0:
             i += 1
-
         if b[j] == 0:
             j += 1
-
     return res
 
 
@@ -76,9 +71,9 @@ def find_cycle_path(x, start_pos):
 
 
 def recalculate_plan(x, cycle_path):
-    cycle_for = cycle_path[1:-1:2]
-    o = np.min([x[i][j] for i, j in cycle_for])
-    minus_cells_equal_to_o = [(i, j) for i, j in cycle_for if np.isnan(x[i][j]) or x[i][j] == o]
+    cycle_minus = cycle_path[1:-1:2]
+    o = np.min([x[i][j] for i, j in cycle_minus])
+    minus_cells_equal_to_o = [(i, j) for i, j in cycle_minus if np.isnan(x[i][j]) or x[i][j] == o]
     # Находим в срезе "отрицательных ячеек" минимум значения
     if np.isnan(o):
         i, j = cycle_path[0]
