@@ -21,13 +21,13 @@ def solve(data: TransportVS):
                             (x.copy(), data.a, data.b)])
 
         check_res = is_degenerate_plan(x)
-        report_list.extend([f'Degenerate plane: {check_res}'])
+        report_list.extend([f'Degenerate plane: {check_res}', "\n"])
         if check_res:
             make_start_plan_non_degenerate(x)
             report_list.extend([
                 '',
                 'Trying to make plan non degenerate:',
-                (x.copy(), data.a, data.b),
+                (x.copy(), data.a, data.b), "\n"
             ])
 
         while True:
@@ -36,20 +36,20 @@ def solve(data: TransportVS):
 
             p = data.calculate_potentials(x)
             report_list.append(f'Potentials: {p}')
-            report_list.append((data.c, p, x.copy()))
+            report_list.append((data.c, x.copy()))
 
             check_res = data.is_plan_optimal(x, p)
             report_list.append(f'Optimal plan: {check_res}')
             if check_res:
-                report_list.extend(['', 'Answer:', (x.copy(), data.a, data.b), f'Target function: {cost}'])
+                report_list.extend(['', 'Answer:', (x.copy()), f'Target function: {cost}'])
                 break
 
             cycle_path = find_cycle_path(x, data.get_best_free_cell(x, p))
             report_list.append(f'Cycle of the recalculation: {cycle_path}')
-            report_list.append((x.copy(), cycle_path, data.a, data.b))
+            report_list.append((x.copy()))
 
             recalculate_plan(x, cycle_path)
-            report_list.extend(['Plan after the recalculation:', (x.copy(), data.a, data.b)])
+            report_list.extend(['Plan after the recalculation:', (x.copy(), data.a, data.b), "\n"])
 
     finally:
         report_text(report_list)

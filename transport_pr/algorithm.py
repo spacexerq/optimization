@@ -2,7 +2,7 @@ import numpy as np
 
 from .class_data_block import TransportVS
 
-epsilon = 1e-10
+epsilon = np.nan
 
 
 def get_start_plan(data: TransportVS):
@@ -76,9 +76,10 @@ def find_cycle_path(x, start_pos):
 
 
 def recalculate_plan(x, cycle_path):
-    o = np.min([x[i][j] for i, j in cycle_path[1:-1:2]])
-    minus_cells_equal_to_o = [(i, j) for i, j in cycle_path[1:-1:2] if np.isnan(x[i][j]) or x[i][j] == o]
-
+    cycle_for = cycle_path[1:-1:2]
+    o = np.min([x[i][j] for i, j in cycle_for])
+    minus_cells_equal_to_o = [(i, j) for i, j in cycle_for if np.isnan(x[i][j]) or x[i][j] == o]
+    # Находим в срезе "отрицательных ячеек" минимум значения
     if np.isnan(o):
         i, j = cycle_path[0]
         x[i][j] = epsilon
@@ -92,8 +93,8 @@ def recalculate_plan(x, cycle_path):
                 x[i][j] = 0
             else:
                 x[i][j] = epsilon
+                # Бесконечно малый элемент
             continue
-
         if np.isnan(x[i][j]):
             x[i][j] = 0
         if k % 2 == 0:
