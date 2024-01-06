@@ -1,10 +1,7 @@
-# метод перебора, метод поразрядного поиска, метод дихотомии, метод золотого сечения, метод парабол, метод Ньютона, метод Марквардта
-#
-# метод средней точки, метод ломаных
-
 import numpy as np
 from matplotlib import pyplot as plt
 from IPython.display import clear_output
+import time
 import collections
 
 
@@ -28,14 +25,14 @@ def live_plot(data_x, data_f, a, b, title=''):
     plt.figure()
     x_space = np.linspace(a, b, 100)
     for i in range(len(data_f)):
-        plt.scatter(data_x, data_f, color='red', s=4)
+        plt.scatter(data_x, data_f, color='red', s=6)
     plt.plot(x_space, function(x_space), label="function")
     plt.title(title)
     plt.grid(True)
     # plt.xlabel('Brute force')
     plt.legend(loc='center left')  # the plot evolves to the right
     plt.show()
-
+    time.sleep(1)
 
 def brute_force(a, b, size=100, live=False):
     h = np.abs((b - a) / size)
@@ -58,7 +55,7 @@ def brute_force(a, b, size=100, live=False):
 
 def bitwise(a, b, epsilon=0.001, live=False):
     # assuming b>a
-    delta = np.abs(b - a) / 4
+    delta = (b-a)/2
     x_0 = a
     f_0 = function(x_0)
     flag = 0
@@ -182,6 +179,7 @@ def live_plot_parabolic(data_x, data_f, list_parabolic, a, b, title=''):
     # plt.xlabel('Brute force')
     plt.legend(loc='center left')  # the plot evolves to the right
     plt.show()
+    time.sleep(2)
 
 
 def calc_parabola_vertex(list_loc):
@@ -291,12 +289,13 @@ def assistant_func(x, x1):
     return function(x) - L * np.abs(x - x1)
 
 
-def live_plot_polylines(data_x, data_f, a, b, title=''):
+def live_plot_polylines(list_data, a, b, title=''):
     clear_output(wait=True)
     plt.figure()
     x_space = np.linspace(a, b, 100)
-    for i in range(len(data_f)):
-        plt.scatter(data_x, data_f, color='red', s=4)
+    [x1, x_opt, x2], [y1, y2, y3], delta = list_data
+    y2 = y2+(2*L*delta)
+    plt.plot([x1, x_opt, x2], [y1, y2, y3])
     plt.plot(x_space, function(x_space), label="function")
     plt.title(title)
     plt.grid(True)
@@ -315,11 +314,10 @@ def p_func_min(p):
     return xl_min, pl_min
 
 
-def polylines(a, b, epsilon=0.001, live=False):
+def polylines(a, b, step_max, epsilon=0.001, live=False):
     N = int(np.abs(b - a) / (2 * epsilon))
     x0 = 1 / (2 * L) * (function(a) - function(b) + L * (a + b))
-    y0 = 1 / 2 * (function(a) - function(b) + L * (a + b))
-    stop = 0
+    poly_min = 1 / 2 * (function(a) - function(b) + L * (a + b))
     p0 = np.zeros(N)
     x = np.linspace(a, b, N)
     p = np.array([p0, x])
@@ -329,45 +327,27 @@ def polylines(a, b, epsilon=0.001, live=False):
         else:
             p[0][i] = function(b) + L * (x[i] - b)
     x_min = x0
-    x1_k = x_min
-    plt.plot(p[1], p[0])
-    plt.plot(x, function(x))
-    plt.show()
+    x_opt = x_min
     step = 1
-    poly(p, x1_k, a, b, step, epsilon=0.001)
-    return
-
-
-def try_end_poly(p):
-    for i in range(len(p[0])):
-        if p[0][i] > function(p[1][i]):
-            return 1
-    return 0
-
-
-def poly(p, x1_k, a, b, step, epsilon=0.001):
-    x_prev, p_prev = p_func_min(p)
-    N = int(np.abs(b - a) / (2 * epsilon))
-    x = np.linspace(a, b, N)
-    x_111 = np.linspace(a_global, b_global, N)
-    x_min = x1_k
-    x_bord = x_min
     p1_f = np.empty(N)
-    p1 = np.array([p1_f, x])
-    for i in range(N):
-        p1[0][i] = max(p[0][i], assistant_func(x_min, x[i]))
-    x1_opt, p1_opt = p_func_min(p1)
-    plt.plot(p1[1], p1[0])
-    plt.plot(x_111, function(x_111))
-    plt.show()
-    delta = 1 / (2 * L) * (function(x_prev) - p_prev)
-    x1_k = x_min - delta
-    x2_k = x_min + delta
-    step += 1
-    poly(p1, x2_k, x_bord, b, step)
-    poly(p1, x1_k, a, x_bord, step)
-    return 0
-
-a_global = -0.5
-b_global = 1
-polylines(-0.5, 1)
+    flag = step < step_max
+    delta = 1 / (2 * L) * (function(x_opt) - poly_min)
+    while flag:
+        p1 = np.array([p1_f, x])
+        for i in range(N):
+            p1[0][i] = max(p[0][i], assistant_func(x_min, x[i]))
+        x1 = x_opt + delta
+        x2 = x_opt - delta
+        list_live = [x1, x_opt, x2], [function(x1), function(x_opt), function(x2)], delta
+        if function(x1) < function(x2):
+            x_opt = x1
+        else:
+            x_opt = x2
+        poly_min = (1 / 2) * (function(x_opt) + poly_min)
+        delta = 1 / (2 * L) * (function(x_opt) - poly_min)
+        step += 1
+        flag = step < step_max and np.abs(2 * L * delta) > epsilon
+        p = p1
+        if list_live:
+            live_plot_polylines(list_live, a, b)
+    return function(x_opt), x_opt, step
